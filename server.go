@@ -561,7 +561,16 @@ func (servers *mongoServers) HasMongos() bool {
 // server to perform operations on at this point in time.
 func (servers *mongoServers) BestFit(mode Mode, serverTags []bson.D) *mongoServer {
 	var best *mongoServer
-	for _, next := range servers.slice {
+
+	shuffle := func(origin mongoServerSlice) mongoServerSlice {
+		tmp := make(mongoServerSlice, len(origin))
+		copy(tmp, origin)
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(tmp), func(i, j int) { tmp[i], tmp[j] = tmp[j], tmp[i] })
+		return tmp
+	}
+
+	for _, next := range shuffle(servers.slice) {
 		if best == nil {
 			best = next
 			best.RLock()
